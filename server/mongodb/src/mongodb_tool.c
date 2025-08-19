@@ -500,31 +500,41 @@ bson_t *ConvertJSONToBSON (const json_t *json_p)
 }
 
 
-json_t *ConvertBSONToJSON (const bson_t *bson_p)
+json_t *ConvertBSONToJSON (const bson_t *bson_p, size_t *length_p)
 {
 	json_t *json_p = NULL;
-	char *value_s = bson_as_canonical_extended_json (bson_p, NULL);
 
-	if (value_s)
+	bson_json_opts_t *opts_p = bson_json_opts_new (BSON_JSON_MODE_LEGACY, BSON_MAX_LEN_UNLIMITED);
+
+	if (opts_p)
 		{
-			json_error_t error;
+			char *value_s = bson_as_json_with_opts (bson_p, length_p, opts_p);
 
-			json_p = json_loads (value_s, 0, &error);
-
-			if (json_p)
+			if (value_s)
 				{
-#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
-					PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "raw bson data:\n", value_s);
-					PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, json_p, "bson to json data:");
-#endif
-				}
-			else
-				{
-					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert %s to JSON, error %s\n", value_s, error.text);
-				}
+					json_error_t error;
 
-			bson_free (value_s);
-		}		/* if (value_s) */
+					json_p = json_loads (value_s, 0, &error);
+
+					if (json_p)
+						{
+		#if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
+							PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "raw bson data:\n", value_s);
+							PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, json_p, "bson to json data:");
+		#endif
+						}
+					else
+						{
+							PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to convert %s to JSON, error %s\n", value_s, error.text);
+						}
+
+					bson_free (value_s);
+				}		/* if (value_s) */
+
+			bson_json_opts_destroy (opts_p);
+		}		/* if (opts_p) */
+
+
 
 	return json_p;
 }
@@ -725,7 +735,7 @@ static bool AddCollectionIndex (MongoTool *tool_p, const char *database_s, const
 																									 database_s, collection_s, error.message);
 																		}
 
-																	reply_s = bson_as_canonical_extended_json (&reply, NULL);
+																	reply_s = ConvertBSONToJSON (&reply, NULL);
 
 																	if (reply_s)
 																		{
@@ -1293,7 +1303,7 @@ int PrintBSONToLog (const uint32 level, const char *filename_s, const int line_n
 	if (bson_p)
 		{
 			size_t len;
-			char *dump_s = bson_as_canonical_extended_json (bson_p, &len);
+			char *dump_s = ConvertBSONToJSON (bson_p, &len);
 
 			if (dump_s)
 				{
@@ -1318,7 +1328,7 @@ int PrintBSONToErrors (const uint32 level, const char *filename_s, const int lin
 	if (bson_p)
 		{
 			size_t len;
-			char *dump_s = bson_as_canonical_extended_json (bson_p, &len);
+			char *dump_s = ConvertBSONToJSON (bson_p, &len);
 
 			if (dump_s)
 				{
@@ -1897,7 +1907,7 @@ bool AddBSONDocumentToJSONArray (const bson_t *document_p, void *data_p)
 {
 	bool success_flag = false;
 	json_t *json_p = (json_t *) data_p;
-	json_t *row_p = ConvertBSONToJSON (document_p);
+	json_t *row_p = ConvertBSONToJSON (document_p, NULL);
 
 	if (row_p)
 		{
@@ -2354,7 +2364,7 @@ bool CreateIndexForMongoCollection (MongoTool *tool_p, char **fields_ss)
 
 #if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
 							{
-								char *reply_s = bson_as_canonical_extended_json (&reply, NULL);
+								char *reply_s = ConvertBSONToJSON (&reply, NULL);
 
 								if (reply_s)
 									{

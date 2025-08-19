@@ -228,7 +228,7 @@ static void PrintJSON (const json_t *data_p, const char *message_s)
 
 static void PrintBSON (const bson_t *doc_p, const char *message_s)
 {
-  char *dump_s = bson_as_canonical_extended_json (doc_p, NULL);
+  char *dump_s = ConvertBSONToJSON (doc_p, NULL);
 
 	if (dump_s)
 		{

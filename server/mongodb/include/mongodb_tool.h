@@ -560,9 +560,10 @@ GRASSROOTS_MONGODB_API json_t *ConvertBSONValueToJSON (const bson_value_t *value
  * Create a new JSON fragment from a given BSON one.
  *
  * @param bson_p The BSON fragment to convert to JSON.
+ * @param length_p An optional pointer to store the length of the fragment string in.
  * @return The JSON fragment or <code>NULL</code> upon error.
  */
-GRASSROOTS_MONGODB_API json_t *ConvertBSONToJSON (const bson_t *bson_p);
+GRASSROOTS_MONGODB_API json_t *ConvertBSONToJSON (const bson_t *bson_p, size_t *length_p);
 
 
 /**

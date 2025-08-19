@@ -1205,7 +1205,7 @@ static json_t *GetUserSearchAsJSON (const GrassrootsServer *grassroots_p, const 
 										{
 											if (!json_is_array (results_p))
 												{
-													json_t *query_json_p = ConvertBSONToJSON (query_p);
+													json_t *query_json_p = ConvertBSONToJSON (query_p, NULL);
 													char *query_s = NULL;
 
 													if (query_json_p)
@@ -1228,7 +1228,7 @@ static json_t *GetUserSearchAsJSON (const GrassrootsServer *grassroots_p, const 
 										}		/* if (results_p) */
 									else
 										{
-											json_t *query_json_p = ConvertBSONToJSON (query_p);
+											json_t *query_json_p = ConvertBSONToJSON (query_p, NULL);
 											char *query_s = NULL;
 
 											if (query_json_p)
@@ -1280,7 +1280,7 @@ static User *GetUser (const GrassrootsServer *grassroots_p, const bson_t *query_
 
 					if (!user_p)
 						{
-							json_t *query_json_p = ConvertBSONToJSON (query_p);
+							json_t *query_json_p = ConvertBSONToJSON (query_p, NULL);
 							char *query_s = NULL;
 
 							if (query_json_p)
@@ -1300,7 +1300,7 @@ static User *GetUser (const GrassrootsServer *grassroots_p, const bson_t *query_
 				}		/* if (num_results == 1) */
 			else
 				{
-					json_t *query_json_p = ConvertBSONToJSON (query_p);
+					json_t *query_json_p = ConvertBSONToJSON (query_p, NULL);
 					char *query_s = NULL;
 
 					if (query_json_p)
