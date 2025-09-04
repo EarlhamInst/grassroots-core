@@ -141,6 +141,17 @@ GRASSROOTS_SERVICE_API void FreeSchemaTerm (SchemaTerm *term_p);
 GRASSROOTS_SERVICE_API void ClearSchemaTerm (SchemaTerm *term_p);
 
 
+
+/**
+ * Make a deep copy of a SchemaTerm.
+ *
+ * @param src_p The SchemaTerm to copy.
+ * @return The newly-allocated SchemaTerm or <code>NULL</code> upon error.
+ * @memberof SchemaTerm
+ */
+GRASSROOTS_SERVICE_API SchemaTerm *CopySchemaTerm (const SchemaTerm * const src_p);
+
+
 /**
  * Allocate a SchemaTermNode.
  *

@@ -110,6 +110,7 @@ bool SetSchemaTermValues (SchemaTerm *term_p, const char *url_s, const char *nam
 }
 
 
+
 SchemaTerm *AllocateSchemaTerm (const char *url_s, const char *name_s, const char *description_s)
 {
 	SchemaTerm *term_p = (SchemaTerm *) AllocMemory (sizeof (SchemaTerm));
@@ -155,6 +156,21 @@ void FreeSchemaTerm (SchemaTerm *term_p)
 
 	FreeMemory (term_p);
 }
+
+
+
+SchemaTerm *CopySchemaTerm (const SchemaTerm * const src_p)
+{
+	SchemaTerm *dest_p = AllocateExtendedSchemaTerm (src_p -> st_url_s, src_p -> st_name_s, src_p -> st_description_s, src_p -> st_abbreviation_s);
+
+	if (!dest_p)
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to copy schema term \"%s\", \"%s\"", src_p -> st_url_s, src_p -> st_name_s);
+		}
+
+	return dest_p;
+}
+
 
 
 SchemaTermNode *AllocateSchemaTermNodeByParts (const char *url_s, const char *name_s, const char *description_s)
