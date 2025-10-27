@@ -23,9 +23,11 @@ static const char * const S_PERMISSIONS_GROUPS_S = "groups";
 static const char * const S_PERMISSIONS_MODE_s = "access_mode";
 
 
-static bool AddPermissionsJSONToGroupJSON (json_t *group_json_p, const Permissions *perms_p, const char * const key_s, const ViewFormat fmt);
+static bool AddPermissionsJSONToGroupJSON (json_t *group_json_p, const Permissions *perms_p, const char * const key_s, const User *user_p, const ViewFormat fmt);
 
 static Permissions *GetPermissionsFromCompoundJSON (const json_t *permissions_group_json_p, const char * const key_s, const GrassrootsServer *grassroots_p);
+
+static bool AddUserToJSONArray (json_t *people_p, const User * const user_p, const ViewFormat vf);
 
 
 
@@ -148,25 +150,28 @@ void FreePermissions (Permissions *permissions_p)
 
 
 
-json_t *GetPermissionsAsJSON (const Permissions *permissions_p, const ViewFormat vf)
+json_t *GetPermissionsAsJSON (const Permissions *permissions_p, const User * const user_p, const ViewFormat vf)
 {
 	json_t *permissions_json_p = json_object ();
-	bool success_flag = false;
 
 	if (permissions_json_p)
 		{
+			bool success_flag = false;
 			const char *access_s = GetAccessRightsAsString (permissions_p -> pe_access);
 
 			if (access_s)
 				{
 					if (SetJSONString (permissions_json_p, S_PERMISSIONS_MODE_s, access_s))
 						{
-							if (permissions_p -> pe_users_p -> ll_size > 0)
+							if ((user_p != NULL) || (HasPermissionsSet (permissions_p)))
 								{
 									json_t *people_p = json_array ();
 
 									if (people_p)
 										{
+											/* This tracks if the optional User passed in to the function has been added on the list */
+											bool added_user_flag = false;
+
 											if (json_object_set_new (permissions_json_p, S_PERMISSIONS_USERS_S, people_p) == 0)
 												{
 													UserNode *node_p = (UserNode *) (permissions_p -> pe_users_p -> ll_head_p);
@@ -174,35 +179,48 @@ json_t *GetPermissionsAsJSON (const Permissions *permissions_p, const ViewFormat
 
 													while (success_flag && node_p)
 														{
-															json_t *user_json_p = GetUserAsJSON (node_p -> un_user_p, vf);
+															User *u_p = node_p  -> un_user_p;
 
-															if (user_json_p)
+															if (user_p)
 																{
-																	if (json_array_append_new (people_p, user_json_p) == 0)
+																	if (CompareUserEmails (user_p, u_p) == 0)
 																		{
-																			node_p = (UserNode *) (node_p -> un_node.ln_next_p);
+																			added_user_flag = true;
 																		}
-																	else
-																		{
-																			success_flag = false;
-																			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, user_json_p, "Failed to append entry to array");
-																			json_decref (user_json_p);
-																		}
+																}
+
+															if (AddUserToJSONArray (people_p, u_p, vf))
+																{
+																	node_p = (UserNode *) (node_p -> un_node.ln_next_p);
 																}
 															else
 																{
 																	success_flag = false;
-																	json_decref (user_json_p);
 																}
 														}
+
+													if (success_flag)
+														{
+															if (!added_user_flag)
+																{
+																	if (!AddUserToJSONArray (people_p, user_p, vf))
+																		{
+																			success_flag = false;
+																		}
+																}
+														}
+
 												}
 											else
 												{
 													json_decref (people_p);
 												}
-
-
 										}
+
+								}		/* if ((user_p != NULL) || (HasPermissionsSet (permissions_p))) */
+							else
+								{
+									success_flag = true;
 								}
 
 						}
@@ -215,6 +233,11 @@ json_t *GetPermissionsAsJSON (const Permissions *permissions_p, const ViewFormat
 				{
 					return permissions_json_p;
 				}
+			else
+				{
+					json_decref (permissions_json_p);
+				}
+
 		}		/* if (permissions_json_p) */
 	else
 		{
@@ -404,10 +427,10 @@ Permissions *GetPermissionsFromJSON (const json_t *permissions_json_p, const Gra
 }
 
 
-bool AddPermissionsGroupToJSON (const PermissionsGroup *permissions_group_p, json_t *json_p, const char * const key_s, const ViewFormat vf)
+bool AddPermissionsGroupToJSON (const PermissionsGroup *permissions_group_p, json_t *json_p, const User *user_p, const char * const key_s, const ViewFormat vf)
 {
 	bool success_flag = false;
-	json_t *perms_group_json_p = GetPermissionsGroupAsJSON (permissions_group_p, vf);
+	json_t *perms_group_json_p = GetPermissionsGroupAsJSON (permissions_group_p, user_p, vf);
 
 	if (perms_group_json_p)
 		{
@@ -433,17 +456,17 @@ bool AddPermissionsGroupToJSON (const PermissionsGroup *permissions_group_p, jso
 
 
 
-json_t *GetPermissionsGroupAsJSON (const PermissionsGroup *permissions_group_p, const ViewFormat vf)
+json_t *GetPermissionsGroupAsJSON (const PermissionsGroup *permissions_group_p, const User *user_p, const ViewFormat vf)
 {
 	json_t *group_json_p = json_object ();
 
 	if (group_json_p)
 		{
-			if (AddPermissionsJSONToGroupJSON (group_json_p, permissions_group_p -> pg_delete_access_p, S_ACCESS_RIGHTS_DELETE_S, vf))
+			if (AddPermissionsJSONToGroupJSON (group_json_p, permissions_group_p -> pg_delete_access_p, S_ACCESS_RIGHTS_DELETE_S, user_p, vf))
 				{
-					if (AddPermissionsJSONToGroupJSON (group_json_p, permissions_group_p -> pg_write_access_p, S_ACCESS_RIGHTS_WRITE_S, vf))
+					if (AddPermissionsJSONToGroupJSON (group_json_p, permissions_group_p -> pg_write_access_p, S_ACCESS_RIGHTS_WRITE_S, user_p, vf))
 						{
-							if (AddPermissionsJSONToGroupJSON (group_json_p, permissions_group_p -> pg_read_access_p, S_ACCESS_RIGHTS_READ_S, vf))
+							if (AddPermissionsJSONToGroupJSON (group_json_p, permissions_group_p -> pg_read_access_p, S_ACCESS_RIGHTS_READ_S, user_p, vf))
 								{
 									return group_json_p;
 								}		/* if (AddPermissionsJSONToGroupJSON (group_json_p, permissions_group_p -> pg_read_access_p, S_ACCESS_RIGHTS_READ_S, vf)) */
@@ -465,13 +488,14 @@ bool HasPermissionsSet (const Permissions * const permissions_p)
 }
 
 
-static bool AddPermissionsJSONToGroupJSON (json_t *group_json_p, const Permissions *perms_p, const char * const key_s, const ViewFormat fmt)
+static bool AddPermissionsJSONToGroupJSON (json_t *group_json_p, const Permissions *perms_p, const char * const key_s, const User *user_p, const ViewFormat fmt)
 {
 	bool success_flag = false;
 
-	if (HasPermissionsSet (perms_p))
+	/* Check if we have any users and hence some non-trivial Permissions to add */
+	if ((user_p != NULL) || (HasPermissionsSet (perms_p)))
 		{
-			json_t *perms_json_p = GetPermissionsAsJSON (perms_p, fmt);
+			json_t *perms_json_p = GetPermissionsAsJSON (perms_p, user_p, fmt);
 
 			if (perms_json_p)
 				{
@@ -759,4 +783,27 @@ static Permissions *GetPermissionsFromCompoundJSON (const json_t *permissions_gr
 		}
 
 	return NULL;
+}
+
+
+
+static bool AddUserToJSONArray (json_t *people_p, const User * const user_p, const ViewFormat vf)
+{
+	bool success_flag = false;
+	json_t *user_json_p = GetUserAsJSON (user_p, vf);
+
+	if (user_json_p)
+		{
+			if (json_array_append_new (people_p, user_json_p) == 0)
+				{
+					success_flag = true;
+				}
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, user_json_p, "Failed to append entry to array");
+					json_decref (user_json_p);
+				}
+		}
+
+	return success_flag;
 }

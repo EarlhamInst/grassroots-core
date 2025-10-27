@@ -375,6 +375,36 @@ void FreeUserNode (ListItem *node_p)
 }
 
 
+int CompareUserEmails (const User * const user_0_p, const User * const user_1_p)
+{
+	int res = 0;
+
+
+	if (user_0_p)
+		{
+			if (user_1_p)
+				{
+					res = strcmp (user_0_p -> us_email_s, user_1_p -> us_email_s);
+				}
+			else
+				{
+					res = -1;
+				}
+		}
+	else
+		{
+			if (user_1_p)
+				{
+					res = 1;
+				}
+		}
+
+	return res;
+}
+
+
+
+
 static bool AddIdToUserJSON (const User * const user_p, json_t *user_json_p)
 {
 	bool success_flag = false;

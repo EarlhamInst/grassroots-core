@@ -217,6 +217,9 @@ GRASSROOTS_USERS_API UserNode *AllocateUserNode (User *user_p);
 GRASSROOTS_USERS_API void FreeUserNode (ListItem *node_p);
 
 
+GRASSROOTS_USERS_API int CompareUserEmails (const User * const user_0_p, const User * const user_1_p);
+
+
 
 #ifdef __cplusplus
 }
