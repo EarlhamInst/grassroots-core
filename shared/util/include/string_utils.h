@@ -418,9 +418,6 @@ GRASSROOTS_UTIL_API bool DoStringsMatch (const char * const val_0_s, const char 
 GRASSROOTS_UTIL_API bool CopyAndAddStringValue (const char * const src_s, char **dest_ss);
 
 
-GRASSROOTS_UTIL_API char *RemoveStartingAndTrailingWhitespace (const char *value_s);
-
-
 GRASSROOTS_UTIL_API char **CopyStringArray (const char **src_ss, const size_t num_values);
 
 

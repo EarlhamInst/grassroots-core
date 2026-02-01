@@ -1361,6 +1361,78 @@ void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const f
 }
 
 
+json_t *DistinctMatchingMongoDocumentsByBSON (MongoTool *tool_p, const char * const database_s, const char * const collection_s, const char *field_s, const bson_t *query_p)
+{
+	json_t *results_p = NULL;
+	bson_t *command_p = BCON_NEW ("distinct",
+																BCON_UTF8 (collection_s),
+																"key",
+																BCON_UTF8 (field_s),
+																"query",
+																BCON_DOCUMENT (query_p));
+
+	if (command_p)
+		{
+			bson_t reply;
+			bson_error_t mongo_error;
+
+			if (mongoc_client_read_command_with_opts (tool_p -> mt_client_p, database_s, command_p, NULL, NULL, &reply, &mongo_error))
+				{
+					char *reply_s = bson_as_canonical_extended_json (&reply, NULL);
+
+					if (reply_s)
+						{
+							json_error_t err;
+							json_t *reply_p = json_loads (reply_s, 0, &err);
+
+							PrintLog (STM_LEVEL_FINER, __FILE__, __LINE__, "distinct: %s\n", reply_s);
+
+							if (reply_p)
+								{
+									results_p = json_object_get (reply_p, "values");
+
+									if (results_p)
+										{
+											PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, results_p, "Reply values: %u", json_array_size (results_p));
+										}
+
+									json_decref (reply_p);
+								}
+
+						}
+
+					bson_free (reply_s);
+				}		/* if (mongoc_client_read_command_with_opts(tool_p -> mt_client_p, "dfw_field_trial", command_p, NULL, NULL, &reply, &mongo_error)) */
+			else
+				{
+					json_t *json_p = NULL;
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "mongoc_client_read_command_with_opts () failed: %s\n",  mongo_error.message);
+
+					json_p = ConvertBSONToJSON (command_p, NULL);
+					if (json_p)
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, json_p, "command_p: ");
+							json_decref (json_p);
+						}
+
+					json_p = ConvertBSONToJSON (query_p, NULL);
+					if (json_p)
+						{
+							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, json_p, "query_p: ");
+							json_decref (json_p);
+						}
+
+				}
+
+			bson_destroy (command_p);
+		}
+
+
+  return results_p;
+}
+
+
+
 bool FindMatchingMongoDocumentsByBSON (MongoTool *tool_p, const bson_t *query_p, const char **fields_ss, bson_t *extra_opts_p)
 {
 	bool success_flag = false;
@@ -1744,7 +1816,7 @@ int64 GetNumberOfMongoResults (MongoTool *tool_p, bson_t *query_p, bson_t *extra
 }
 
 
-bool PopulateJSONWithAllMongoResults (MongoTool *tool_p, bson_t *query_p, bson_t *extra_opts_p, json_t *results_array_p)
+bool PopulateJSONWithAllMongoResults (MongoTool *tool_p, bson_t *query_p,  const char **fields_ss, bson_t *extra_opts_p, json_t *results_array_p)
 {
 	bool success_flag = false;
 	
@@ -1768,7 +1840,7 @@ bool PopulateJSONWithAllMongoResults (MongoTool *tool_p, bson_t *query_p, bson_t
 
 			if (query_p)
 				{
-					if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, NULL, extra_opts_p))
+					if (FindMatchingMongoDocumentsByBSON (tool_p, query_p, fields_ss, extra_opts_p))
 						{
 							if (IterateOverMongoResults (tool_p, AddBSONDocumentToJSONArray, results_array_p))
 								{
@@ -1802,14 +1874,20 @@ bool PopulateJSONWithAllMongoResults (MongoTool *tool_p, bson_t *query_p, bson_t
 }
 
 
-
 json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p, bson_t *extra_opts_p)
+{
+	return GetAllMongoResultsWithNamedFieldsAsJSON (tool_p, query_p, NULL, extra_opts_p);
+}
+
+
+
+json_t *GetAllMongoResultsWithNamedFieldsAsJSON (MongoTool *tool_p, bson_t *query_p, const char **fields_ss, bson_t *extra_opts_p)
 {
 	json_t *results_array_p = json_array ();
 
 	if (results_array_p)
 		{
-			if (PopulateJSONWithAllMongoResults (tool_p, query_p, extra_opts_p, results_array_p))
+			if (PopulateJSONWithAllMongoResults (tool_p, query_p, fields_ss, extra_opts_p, results_array_p))
 				{
 					return results_array_p;
 				}
@@ -1823,7 +1901,6 @@ json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p, bson_t *ex
 
 	return NULL;
 }
-
 
 OperationStatus ProcessMongoResults (MongoTool *tool_p, bson_t *query_p, bson_t *extra_opts_p, bool (*process_bson_fn) (const bson_t *document_p, void *data_p), void *data_p)
 {

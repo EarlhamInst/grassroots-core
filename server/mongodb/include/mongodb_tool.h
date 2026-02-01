@@ -393,10 +393,28 @@ GRASSROOTS_MONGODB_API bool HasMongoQueryResults (MongoTool *tool_p);
  *
  * @param tool_p The MongoTool to get the results with.
  * @param query_p The query to run.
+ * @param extra_opts_p Any additional options to search with. This can be <code>NULL</code>.
  * @return A json_t array with all of the results from the search or <code>NULL</code> upon error.
  * @memberof MongoTool
+ * @see GetAllMongoResultsWithNamedFieldsAsJSON()
  */
 GRASSROOTS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson_t *query_p, bson_t *extra_opts_p);
+
+
+
+/**
+ * Get all results from a mongodb collection.
+ *
+ * @param tool_p The MongoTool to get the results with.
+ * @param query_p The query to run.
+ * @param extra_opts_p Any additional options to search with. This can be <code>NULL</code>.
+ * @param fields_ss A <code>NULL</code>-delimited array of the keys and their values to return. If this is.
+ * <code>NULL</code> then all of the fields are returned.
+ * @return A json_t array with all of the results from the search or <code>NULL</code> upon error.
+ * @memberof MongoTool
+ * @see GetAllMongoResultsAsJSON()
+ */
+GRASSROOTS_MONGODB_API json_t *GetAllMongoResultsWithNamedFieldsAsJSON (MongoTool *tool_p, bson_t *query_p, const char **fields_ss, bson_t *extra_opts_p);
 
 
 /**
@@ -408,7 +426,7 @@ GRASSROOTS_MONGODB_API json_t *GetAllMongoResultsAsJSON (MongoTool *tool_p, bson
  * @param <code>true</code> if the search and retrieval of the results was successful, <code>false</code> otherwise.
  * @memberof MongoTool
  */
-GRASSROOTS_MONGODB_API bool PopulateJSONWithAllMongoResults (MongoTool *tool_p, bson_t *query_p, bson_t *extra_opts_p, json_t *results_array_p);
+GRASSROOTS_MONGODB_API bool PopulateJSONWithAllMongoResults (MongoTool *tool_p, bson_t *query_p,  const char **fields_ss, bson_t *extra_opts_p, json_t *results_array_p);
 
 
 /**
@@ -828,6 +846,9 @@ GRASSROOTS_MONGODB_API int DoesCollectionExist (MongoTool *tool_p, const char *c
  * @memberof MongoTool
  */
 GRASSROOTS_MONGODB_API bool DropCollectionIndex (MongoTool *tool_p, const char *index_s);
+
+
+GRASSROOTS_MONGODB_API json_t *DistinctMatchingMongoDocumentsByBSON (MongoTool *tool_p, const char * const database_s, const char * const collection_s, const char *field_s, const bson_t *query_p);
 
 
 
