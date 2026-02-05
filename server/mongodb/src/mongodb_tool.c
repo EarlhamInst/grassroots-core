@@ -52,7 +52,7 @@ static bool AddCollectionIndex (MongoTool *tool_p, const char *database_s, const
 
 
 #ifdef _DEBUG
-#define MONGODB_TOOL_DEBUG	(STM_LEVEL_INFO)
+#define MONGODB_TOOL_DEBUG	(STM_LEVEL_FINE)
 #else
 #define MONGODB_TOOL_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -1361,9 +1361,9 @@ void LogBSONOid (const bson_oid_t *bson_p, const int level, const char * const f
 }
 
 
-json_t *DistinctMatchingMongoDocumentsByBSON (MongoTool *tool_p, const char * const database_s, const char * const collection_s, const char *field_s, const bson_t *query_p)
+OperationStatus DistinctMatchingMongoDocumentsByBSON (MongoTool *tool_p, const char * const database_s, const char * const collection_s, const char *field_s, const bson_t *query_p, json_t **results_pp)
 {
-	json_t *results_p = NULL;
+	OperationStatus status = OS_FAILED;
 	bson_t *command_p = BCON_NEW ("distinct",
 																BCON_UTF8 (collection_s),
 																"key",
@@ -1389,10 +1389,12 @@ json_t *DistinctMatchingMongoDocumentsByBSON (MongoTool *tool_p, const char * co
 
 							if (reply_p)
 								{
-									results_p = json_object_get (reply_p, "values");
+									json_t *results_p = json_object_get (reply_p, "values");
 
 									if (results_p)
 										{
+											*results_pp = results_p;
+											status = OS_SUCCEEDED;
 											PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, results_p, "Reply values: %u", json_array_size (results_p));
 										}
 
@@ -1428,7 +1430,7 @@ json_t *DistinctMatchingMongoDocumentsByBSON (MongoTool *tool_p, const char * co
 		}
 
 
-  return results_p;
+  return status;
 }
 
 
@@ -1596,6 +1598,7 @@ bool IterateOverMongoResults (MongoTool *tool_p, bool (*process_bson_fn) (const 
 					mongoc_cursor_destroy (tool_p -> mt_cursor_p);
 					tool_p -> mt_cursor_p = NULL;
 				}
+
 
 		}		/* if (tool_p -> mt_cursor_p) */
 	else

@@ -190,7 +190,6 @@ typedef struct MongoTool
 	 */
 	mongoc_cursor_t *mt_cursor_p;
 
-
 	struct MongoClientManager *mt_manager_p;
 } MongoTool;
 
@@ -848,7 +847,7 @@ GRASSROOTS_MONGODB_API int DoesCollectionExist (MongoTool *tool_p, const char *c
 GRASSROOTS_MONGODB_API bool DropCollectionIndex (MongoTool *tool_p, const char *index_s);
 
 
-GRASSROOTS_MONGODB_API json_t *DistinctMatchingMongoDocumentsByBSON (MongoTool *tool_p, const char * const database_s, const char * const collection_s, const char *field_s, const bson_t *query_p);
+GRASSROOTS_MONGODB_API OperationStatus DistinctMatchingMongoDocumentsByBSON (MongoTool *tool_p, const char * const database_s, const char * const collection_s, const char *field_s, const bson_t *query_p, json_t **results_pp);
 
 
 
