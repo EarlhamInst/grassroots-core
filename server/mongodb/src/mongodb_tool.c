@@ -1303,12 +1303,19 @@ int PrintBSONToLog (const uint32 level, const char *filename_s, const int line_n
 	if (bson_p)
 		{
 			size_t len;
-			char *dump_s = ConvertBSONToJSON (bson_p, &len);
+			json_t *json_p = ConvertBSONToJSON (bson_p, &len);
 
-			if (dump_s)
+			if (json_p)
 				{
-					PrintLog (level, filename_s, line_number, "%s", dump_s);
-					bson_free (dump_s);
+					char *dump_s = json_dumps (json_p, JSON_INDENT (2));
+
+					if (dump_s)
+						{
+							PrintLog (level, filename_s, line_number, "%s", dump_s);
+							free (dump_s);
+						}
+
+					json_decref (json_p);
 				}
 		}
 
