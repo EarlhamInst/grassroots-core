@@ -52,7 +52,7 @@ static bool AddCollectionIndex (MongoTool *tool_p, const char *database_s, const
 
 
 #ifdef _DEBUG
-#define MONGODB_TOOL_DEBUG	(STM_LEVEL_FINE)
+#define MONGODB_TOOL_DEBUG	(STM_LEVEL_INFO)
 #else
 #define MONGODB_TOOL_DEBUG	(STM_LEVEL_NONE)
 #endif
@@ -1396,13 +1396,19 @@ OperationStatus DistinctMatchingMongoDocumentsByBSON (MongoTool *tool_p, const c
 
 							if (reply_p)
 								{
-									json_t *results_p = json_object_get (reply_p, "values");
+									const json_t *results_p = json_object_get (reply_p, "values");
 
 									if (results_p)
 										{
-											*results_pp = results_p;
-											status = OS_SUCCEEDED;
-											PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, results_p, "Reply values: %u", json_array_size (results_p));
+											*results_pp = json_deep_copy (results_p);
+
+											if (*results_pp)
+												{
+													status = OS_SUCCEEDED;
+												}
+											else
+
+												PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, results_p, "Reply values: %u", json_array_size (results_p));
 										}
 
 									json_decref (reply_p);
