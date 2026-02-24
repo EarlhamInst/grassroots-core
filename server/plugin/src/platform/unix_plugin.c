@@ -29,7 +29,7 @@
 #define USING_VALGRIND (1)
 
 #ifdef _DEBUG
-	#define UNIX_PLUGIN_DEBUG	(STM_LEVEL_FINER)
+	#define UNIX_PLUGIN_DEBUG	(STM_LEVEL_INFO)
 #else
 	#define UNIX_PLUGIN_DEBUG	(STM_LEVEL_NONE)
 #endif
