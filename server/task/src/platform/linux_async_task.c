@@ -53,7 +53,7 @@ static void *DoAsyncTaskRun (void *data_p);
 
 
 #ifdef _DEBUG
-	#define UNIX_ASYNC_TASK_DEBUG	(STM_LEVEL_FINEST)
+	#define UNIX_ASYNC_TASK_DEBUG	(STM_LEVEL_INFOs)
 #else
 	#define UNIX_ASYNC_TASK_DEBUG	(STM_LEVEL_NONE)
 #endif
