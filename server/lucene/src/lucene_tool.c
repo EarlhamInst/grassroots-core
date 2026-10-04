@@ -45,6 +45,7 @@ static bool ParseFacetResults (LuceneTool *tool_p, const json_t *results_p);
 
 static bool SaveCommandLine (const char * const full_filename_stem_s, const char * const command_s);
 
+static void MakeValidFilename (char *filename_s);
 
 
 LuceneTool *AllocateLuceneTool (GrassrootsServer *grassroots_p, uuid_t id)
@@ -263,6 +264,8 @@ bool SearchLucene (LuceneTool *tool_p, const char *query_s, LinkedList *facets_p
 
 											ConvertUUIDToString (tool_p -> lt_id, uuid_s);
 
+											MakeValidFilename (uuid_s);
+
 											if (tool_p -> lt_name_s)
 												{
 													if (! (file_s = ConcatenateVarargsStrings (uuid_s, "_", tool_p -> lt_name_s, NULL)))
@@ -356,6 +359,8 @@ OperationStatus DeleteLucene (LuceneTool *tool_p, const char *query_s, const Que
 					char *file_s = uuid_s;
 
 					ConvertUUIDToString (tool_p -> lt_id, uuid_s);
+					MakeValidFilename (uuid_s);
+
 
 					if (tool_p -> lt_name_s)
 						{
@@ -452,6 +457,7 @@ OperationStatus IndexLucene (LuceneTool *tool_p, const json_t *data_p, bool upda
 							char *file_s = uuid_s;
 
 							ConvertUUIDToString (tool_p -> lt_id, uuid_s);
+							MakeValidFilename (uuid_s);
 
 							if (tool_p -> lt_name_s)
 								{
@@ -664,13 +670,29 @@ OperationStatus IndexLucene (LuceneTool *tool_p, const json_t *data_p, bool upda
 
 bool SetLuceneToolOutput (LuceneTool *tool_p, char *output_s)
 {
-	return ReplaceValidString (output_s, & (tool_p -> lt_output_file_s));
+	bool success_flag = false;
+
+	if (ReplaceValidString (output_s, & (tool_p -> lt_output_file_s)))
+		{
+		//	MakeValidFilename (tool_p -> lt_output_file_s);
+			success_flag = true;
+		}
+
+	return success_flag;
 }
 
 
 bool SetLuceneToolName (LuceneTool *tool_p, const char *name_s)
 {
-	return ReplaceValidString (name_s, & (tool_p -> lt_name_s));
+	bool success_flag = false;
+
+	if (ReplaceValidString (name_s, & (tool_p -> lt_name_s)))
+		{
+		//	MakeValidFilename (tool_p -> lt_name_s);
+			success_flag = true;
+		}
+
+	return success_flag;
 }
 
 
@@ -679,6 +701,23 @@ void SetLuceneToolId (LuceneTool *tool_p, uuid_t id)
 	uuid_copy (tool_p -> lt_id, id);
 }
 
+
+static void MakeValidFilename (char *filename_s)
+{
+	char *c_p = filename_s;
+	const char fs_sep_char = GetFileSeparatorChar ();
+
+	while (*c_p != '\0')
+		{
+			if (*c_p == fs_sep_char)
+				{
+					*c_p = '_';
+				}
+
+			++ c_p;
+		}
+
+}
 
 
 static bool ReplaceValidString (const char *src_s, char **dest_ss)

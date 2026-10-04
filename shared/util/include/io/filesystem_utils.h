@@ -358,6 +358,10 @@ GRASSROOTS_UTIL_API bool RemoveFile (const char * const path_s);
 GRASSROOTS_UTIL_API bool DoesFileExist (const char * const path_s);
 
 
+
+
+
+
 #ifdef __cplusplus
 }
 #endif

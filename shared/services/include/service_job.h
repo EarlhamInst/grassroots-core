@@ -444,6 +444,18 @@ GRASSROOTS_SERVICE_API bool SetServiceJobName (ServiceJob *job_p, const char * c
 
 
 /**
+ * @brief Set the name of ServiceJob.
+ *
+ * @param job_p The ServiceJob to alter.
+ * @param new_results_p The results to set. They will be shallow copied.
+ * @return <code>true</code> if the results was set successfully, <code>false</code> otherwise.
+ * @memberof ServiceJob
+ */
+GRASSROOTS_SERVICE_API bool SetServiceJobResults (ServiceJob *job_p, json_t *new_results_p);
+
+
+
+/**
  * @brief Allocate a ServiceJobSet.
  *
  * @param service_p The Service to allocate the ServiceJobSet for.

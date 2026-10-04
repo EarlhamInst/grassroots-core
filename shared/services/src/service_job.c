@@ -1289,6 +1289,19 @@ json_t *GetServiceJobAsJSON (ServiceJob *job_p, bool omit_results_flag)
 }
 
 
+
+bool SetServiceJobResults (ServiceJob *job_p, json_t *new_results_p)
+{
+	if (job_p -> sj_result_p)
+		{
+			json_decref (job_p -> sj_result_p);
+		}
+
+	job_p -> sj_result_p = new_results_p;
+	return true;
+}
+
+
 bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 {
 	bool success_flag = true;
