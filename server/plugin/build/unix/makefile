@@ -45,6 +45,14 @@ SRCS += $(PLATFORM_SRCS)
 	
 CPPFLAGS += -DGRASSROOTS_PLUGIN_LIBRARY_EXPORTS
 
+# Pass USING_VALGRIND=1 on the make comand line
+# to disable the calls to dlclose on the loaded
+# shared objects to allow for full stack traces
+ifeq ($(USING_VALGRIND),1)
+CPPFLAGS += -DUSING_VALGRIND=1
+endif
+
+
 BASE_LDFLAGS = \
 	-L$(DIR_GRASSROOTS_UTIL_LIB) -l$(GRASSROOTS_UTIL_LIB_NAME) \
 

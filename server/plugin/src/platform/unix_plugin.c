@@ -26,8 +26,6 @@
 #include "grassroots_server.h"
 
 
-#define USING_VALGRIND (1)
-
 #ifdef _DEBUG
 	#define UNIX_PLUGIN_DEBUG	(STM_LEVEL_INFO)
 #else
@@ -73,7 +71,7 @@ void ClosePlugin (Plugin * const plugin_p)
 			 * so that the stack trace can be generated correctly. Do not use in production servers as
 			 * it is a resource leak.
 			 */
-			#ifndef USING_VALGRIND
+			#if !USING_VALGRIND
 			dlclose (unix_plugin_p -> up_handle_p);
 			#endif
 
