@@ -662,6 +662,7 @@ static bool AddUnsignedIntParameterDetailsToJSON (const Parameter *param_p, json
 																							if (!SetJSONString (item_p, SHARED_TYPE_DESCRIPTION_S, option_p -> uipo_description_s))
 																								{
 																									res_flag = false;
+																									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, item_p, "SetJSONString failed for \"%s\": \"%s\"", SHARED_TYPE_DESCRIPTION_S, option_p -> uipo_description_s);
 																								}
 																						}
 
@@ -669,7 +670,28 @@ static bool AddUnsignedIntParameterDetailsToJSON (const Parameter *param_p, json
 																						{
 																							if (json_object_set_new (item_p, SHARED_TYPE_VALUE_S, value_p) == 0)
 																								{
-																									success_flag = (json_array_append_new (json_options_p, item_p) == 0);
+																									if (json_array_append_new (json_options_p, item_p) == 0)
+																										{
+																											success_flag = true;
+																										}
+																									else
+																										{
+																											char *dump_s = json_dumps (item_p, JSON_INDENT (2));
+
+																											if (dump_s)
+																												{
+																													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, json_options_p, "json_array_append_new failed for \"%s\"", dump_s);
+																													free (dump_s);
+																												}
+																											else
+																												{
+																													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, json_options_p, "json_array_append_new failed for option \"" UINT32_FMT, option_p -> uipo_value);
+																												}
+																										}
+																								}
+																							else
+																								{
+																									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, item_p, "json_object_set_new failed for \"%s\": \"%s\"", SHARED_TYPE_VALUE_S, option_p -> uipo_value);
 																								}
 																						}
 
@@ -678,7 +700,21 @@ static bool AddUnsignedIntParameterDetailsToJSON (const Parameter *param_p, json
 																							json_object_clear (item_p);
 																							json_decref (item_p);
 																						}
+
+																				}		/* if (item_p) */
+																			else
+																				{
+																					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate item_p");
 																				}
+
+																			if (!success_flag)
+																				{
+
+																				}
+																		}		/* if (value_p) */
+																	else
+																		{
+																			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Failed to allocate value_p");
 																		}
 
 																	node_p = (UnsignedIntParameterOptionNode *) (node_p -> uipon_node.ln_next_p);

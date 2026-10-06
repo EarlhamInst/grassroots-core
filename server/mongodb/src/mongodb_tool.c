@@ -764,7 +764,8 @@ static bool AddCollectionIndex (MongoTool *tool_p, const char *database_s, const
 
 						}
 
-				}		/* if (setup_flag) */
+					bson_free (index_s);
+				}		/* if (index_s) */
 
 
 		}		/* if (setup_flag) */
