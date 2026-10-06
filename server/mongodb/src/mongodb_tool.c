@@ -720,7 +720,7 @@ static bool AddCollectionIndex (MongoTool *tool_p, const char *database_s, const
 															if (create_indexes_command_p)
 																{
 																	bson_t reply;
-																	char *reply_s = NULL;
+																	json_t *reply_p = NULL;
 																	bson_error_t error;
 
 																	added_to_command_flag = true;
@@ -735,18 +735,18 @@ static bool AddCollectionIndex (MongoTool *tool_p, const char *database_s, const
 																									 database_s, collection_s, error.message);
 																		}
 
-																	reply_s = ConvertBSONToJSON (&reply, NULL);
+																	reply_p = ConvertBSONToJSON (&reply, NULL);
 
-																	if (reply_s)
+																	if (reply_p)
 																		{
-																			PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "Reply for creating index for \"%s\", \"%s\": \"%s\"",
-																								database_s, collection_s, reply_s);
+																			PrintJSONToLog (STM_LEVEL_INFO, __FILE__, __LINE__, reply_p, "Reply for creating index for \"%s\", \"%s\"",
+																								database_s, collection_s);
 
-																			bson_free (reply_s);
-																		}		/* if (reply_s) */
+																			json_decref (reply_p);
+																		}		/* if (reply_p) */
 
 																	bson_destroy (&reply);
-
+																	bson_error_clear (&error);
 
 																	bson_destroy (create_indexes_command_p);
 																}		/* if (create_indexes_command_p) */
@@ -757,10 +757,9 @@ static bool AddCollectionIndex (MongoTool *tool_p, const char *database_s, const
 								}
 
 
-							if (!added_to_command_flag)
-								{
-									bson_destroy (doc_p);
-								}
+
+							bson_destroy (doc_p);
+
 
 						}
 
@@ -1336,13 +1335,14 @@ int PrintBSONToErrors (const uint32 level, const char *filename_s, const int lin
 	if (bson_p)
 		{
 			size_t len;
-			char *dump_s = ConvertBSONToJSON (bson_p, &len);
+			json_t *json_p = ConvertBSONToJSON (bson_p, &len);
 
-			if (dump_s)
+			if (json_p)
 				{
-					PrintErrors (level, filename_s, line_number, "%s", dump_s);
-					bson_free (dump_s);
-				}
+					PrintJSONToLog (level, filename_s, line_number, json_p, "");
+					json_decref (json_p);
+				}		/* if (json_p) */
+
 		}
 
 	return result;
