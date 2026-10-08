@@ -10,7 +10,12 @@ endif
 
 include $(DIR_BUILD_CONFIG)/project.properties
 
+# include the configuration details of any dependencies
+-include $(DIR_BUILD)/user.prefs
+
 export DIR_INSTALL=$(DIR_GRASSROOTS_INSTALL)/lib
+
+
 
 
 

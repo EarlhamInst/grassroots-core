@@ -228,16 +228,24 @@ static void PrintJSON (const json_t *data_p, const char *message_s)
 
 static void PrintBSON (const bson_t *doc_p, const char *message_s)
 {
-  char *dump_s = ConvertBSONToJSON (doc_p, NULL);
+	json_t *json_p = ConvertBSONToJSON (doc_p, NULL);
 
-	if (dump_s)
+
+	if (json_p)
 		{
-			printf ("%s \"%s\"\n", message_s, dump_s);
-		  bson_free (dump_s);
-		}
-	else
-		{
-			printf ("%s NULL\n", message_s);
+		  char *dump_s = json_dumps (json_p, 0);
+
+			if (dump_s)
+				{
+					printf ("%s \"%s\"\n", message_s, dump_s);
+					free (dump_s);
+				}
+			else
+				{
+					printf ("%s NULL\n", message_s);
+				}
+
+			json_decref (json_p);
 		}
 }
 
