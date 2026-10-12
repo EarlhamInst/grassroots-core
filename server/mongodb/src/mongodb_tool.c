@@ -1319,6 +1319,8 @@ int PrintBSONToLog (const uint32 level, const char *filename_s, const int line_n
 				}
 		}
 
+	va_end (args);
+
 	return result;
 }
 
@@ -1339,11 +1341,13 @@ int PrintBSONToErrors (const uint32 level, const char *filename_s, const int lin
 
 			if (json_p)
 				{
-					PrintJSONToLog (level, filename_s, line_number, json_p, "");
+					PrintJSONToErrors (level, filename_s, line_number, json_p, "");
 					json_decref (json_p);
 				}		/* if (json_p) */
 
 		}
+
+	va_end (args);
 
 	return result;
 }
@@ -2458,12 +2462,12 @@ bool CreateIndexForMongoCollection (MongoTool *tool_p, char **fields_ss)
 
 #if MONGODB_TOOL_DEBUG >= STM_LEVEL_FINE
 							{
-								char *reply_s = ConvertBSONToJSON (&reply, NULL);
+								json_t *reply_p = ConvertBSONToJSON (&reply, NULL);
 
-								if (reply_s)
+								if (reply_p)
 									{
-										PrintLog (STM_LEVEL_FINE, __FILE__, __LINE__, "%s", reply_s);
-										bson_free (reply_s);
+										PrintJSONToLog (STM_LEVEL_FINE, __FILE__, __LINE__, reply_p, "Reply for creating index for \"%s\"", collection_name_s);
+										json_decref (reply_p);
 									}
 							}
 #endif
@@ -2473,6 +2477,7 @@ bool CreateIndexForMongoCollection (MongoTool *tool_p, char **fields_ss)
 									PrintErrors (STM_LEVEL_FINE, __FILE__, __LINE__, "Error creating MongoDB index for %s: %s", collection_name_s, error.message);
 								}
 
+							bson_destroy (&reply);
 							bson_destroy (command_p);
 						}		/* if (command_p) */
 
