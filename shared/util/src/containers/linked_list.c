@@ -686,3 +686,4 @@ void InitListItem (ListItem * const item_p)
 	item_p -> ln_prev_p = NULL;
 }
 
+

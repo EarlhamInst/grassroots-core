@@ -20,8 +20,8 @@
 
 #include "memory_allocations.h"
 #include "string_utils.h"
-
-
+#include "linked_list.h"
+#include "string_linked_list.h"
 
 char *GetFilenameOnly (const char * const full_path_to_file)
 {
@@ -244,4 +244,5 @@ char *MakeFilename (const char * const path, const char * const filename)
 
 	return NULL;
 }
+
 

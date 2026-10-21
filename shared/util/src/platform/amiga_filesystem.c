@@ -89,53 +89,68 @@ BOOLEAN IsPathAbsolute (const char * const path_s)
 
 
 /**** @TODO ****/
-LinkedList *GetMatchingFiles (const char * const pattern)
+LinkedList *GetMatchingFiles (const char ** const patterns_ss, const bool full_path_flag, const bool recurse_flag, bool (*match_fn) (const void *entry_p))
 {
-	LinkedList *names_p = NULL;
-	STRPTR compiled_pattern_s = CompilePattern (pattern);
+	LinkedList *names_p = AllocateLinkedList (FreeStringListNode);
 
-	if (compiled_pattern_s)
+	if (names_p)
 		{
-			struct AnchorPath *ap_p = IDOS->AllocDosObjectTags (DOS_ANCHORPATH,
-				ADO_Strlen, 2048,
-				ADO_Flags, 0,
-				ADO_Mask, SIGBREAKF_CTRL_C,
-				TAG_DONE);
+			const char * const pattern_ss = patterns_ss;
+			bool loop_flag = (*pattern_ss != NULL);
 
-			if (ap_p)
+			while (loop_flag)
 				{
-					names_p = AllocateLinkedList (FreeStringListNode);
+					STRPTR compiled_pattern_s = CompilePattern (*pattern_ss);
 
-					if (names_p)
+					if (compiled_pattern_s)
 						{
-							int32 error;
+							struct AnchorPath *ap_p = IDOS->AllocDosObjectTags (DOS_ANCHORPATH,
+								ADO_Strlen, 2048,
+								ADO_Flags, 0,
+								ADO_Mask, SIGBREAKF_CTRL_C,
+								TAG_DONE);
 
-							for (error = IDOS->MatchFirst (compiled_pattern_s, ap_p); error == 0; error = IDOS->MatchNext (ap_p))
+							if (ap_p)
 								{
-									StringListNode *node_p = AllocateStringListNode (ap_p -> ap_Info.fib_FileName, MF_DEEP_COPY);
+									int32 error;
 
-									if (node_p)
+									for (error = IDOS->MatchFirst (compiled_pattern_s, ap_p); error == 0; error = IDOS->MatchNext (ap_p))
 										{
-											LinkedListAddTail (names_p, (ListNode * const) node_p);
+											StringListNode *node_p = AllocateStringListNode (ap_p -> ap_Info.fib_FileName, MF_DEEP_COPY);
+
+											if (node_p)
+												{
+													LinkedListAddTail (names_p, (ListNode * const) node_p);
+												}
+											else
+												{
+													error = 1;
+												}
 										}
-									else
+
+									if (error != 0)
 										{
-											error = 1;
+											FreeLinkedList (names_p);
+											names_p = NULL;
+											loop_flag = false;
 										}
+
+									IDOS->FreeDosObject (DOS_ANCHORPATH, ap_p);
 								}
 
-							if (error != 0)
-								{
-									FreeLinkedList (names_p);
-									names_p = NULL;
-								}
+							FreeMemory (compiled_pattern_s);
 						}
 
-					IDOS->FreeDosObject (DOS_ANCHORPATH, ap_p);
+					if (loop_flag)
+						{
+							++ pattern_ss;
+
+							loop_flag = (*pattern_ss != NULL);
+						}
 				}
 
-			FreeMemory (compiled_pattern_s);
-		}
+		}		/* if (names_p) */
+
 
 	return names_p;
 }

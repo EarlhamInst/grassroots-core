@@ -485,7 +485,13 @@ void AddReferenceServices (GrassrootsServer *grassroots_p, LinkedList *services_
 
 			if (path_and_pattern_s)
 				{
-					LinkedList *matching_filenames_p = GetMatchingFiles (path_and_pattern_s, true);
+					const char *patterns_ss [2];
+					LinkedList *matching_filenames_p = NULL;
+
+					*patterns_ss = path_and_pattern_s;
+					* (patterns_ss + 1) = NULL;
+
+					matching_filenames_p = GetMatchingFiles (patterns_ss, true, false, NULL);
 
 					if (matching_filenames_p)
 						{
@@ -3163,7 +3169,7 @@ static uint32 FindMatchingServices (GrassrootsServer *grassroots_p, ServiceMatch
 
 					if (path_and_pattern_s)
 						{
-							LinkedList *matching_filenames_p = GetMatchingFiles (path_and_pattern_s, true);
+							LinkedList *matching_filenames_p = GetMatchingFiles (path_and_pattern_s, true, false, NULL);
 
 							if (matching_filenames_p)
 								{

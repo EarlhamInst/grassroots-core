@@ -26,6 +26,7 @@
 
 #include <time.h>
 
+
 #include "typedefs.h"
 #include "linked_list.h"
 #include "grassroots_util_library.h"
@@ -44,6 +45,11 @@ typedef struct FileInformation
 	/** The size of the file in bytes */
 	size_t fi_size;
 } FileInformation;
+
+
+#define FS_TYPE_FILE 	(1)
+#define FS_TYPE_DIR 	(1 << 1)
+#define FS_TYPE_ANY 	(FS_TYPE_FILE | FS_TYPE_DIR)
 
 
 
@@ -198,7 +204,7 @@ GRASSROOTS_UTIL_API bool IsPathAbsolute (const char * const path_s);
 /**
  * @brief Get files that match a given pattern.
  *
- * @param pattern_s The path including the pattern.
+ * @param pattern_ss A NULL-terminated array of paths including the patterns.
  * @param full_path_flag If this is <code>true</code> then the full path to matching files will
  * be stored. If it is <code>false</code> then only the local filenames will be stored.
  * @return A LinkedList of StringListNode containing the matching filenames or <code>NULL</code>
@@ -206,7 +212,7 @@ GRASSROOTS_UTIL_API bool IsPathAbsolute (const char * const path_s);
  *
  * @ingroup utility_group
  */
-GRASSROOTS_UTIL_API LinkedList *GetMatchingFiles (const char * const pattern_s, const bool full_path_flag);
+GRASSROOTS_UTIL_API LinkedList *GetMatchingFiles (const char ** const patterns_ss, const bool full_path_flag, const bool recurse_flag, bool (*match_fn) (const void *entry_p));
 
 
 /**
@@ -356,9 +362,6 @@ GRASSROOTS_UTIL_API bool RemoveFile (const char * const path_s);
  * @ingroup utility_group
  */
 GRASSROOTS_UTIL_API bool DoesFileExist (const char * const path_s);
-
-
-
 
 
 

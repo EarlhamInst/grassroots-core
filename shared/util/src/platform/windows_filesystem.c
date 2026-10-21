@@ -88,94 +88,103 @@ bool IsPathAbsolute (const char * const path_s)
 }
 
 
-LinkedList *GetMatchingFiles (const char * const pattern_s, const bool full_path_flag)
+LinkedList *GetMatchingFiles (const char * const patterns_ss, const bool full_path_flag, const bool recurse_flag, bool (*match_fn) (const struct dirent *entry_p))
 {
 	LinkedList *list_p = AllocateLinkedList (FreeStringListNode);
 
 	if (list_p)
 		{
-			WIN32_FIND_DATA file_data;
-			HANDLE handle;
-			size_t len = strlen (pattern_s);
+			const char **pattern_ss = patterns_ss;
 
-			if (len <= MAX_PATH)
+			while (*patterns_ss)
 				{
-					char root_path_s [MAX_PATH + 1];
-					wchar_t root_path [MAX_PATH + 1];
-					
-					mbstowcs (root_path, pattern_s, MAX_PATH);
-					PathCchRemoveFileSpec (root_path, MAX_PATH);
-					wcstombs (root_path_s, root_path, MAX_PATH);
+					WIN32_FIND_DATA file_data;
+					HANDLE handle;
+					size_t len = strlen (pattern_s);
 
-
-#if WINDOWS_FS_DEBUG >= STM_LEVEL_FINEST
-					PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Searching pattern \"%s\", root_path \"%s\" full_path_flag %d", pattern_s, root_path_s, full_path_flag);
-#endif
-
-
-					if ((handle = FindFirstFile (pattern_s, &file_data)) != INVALID_HANDLE_VALUE)
+					if (len <= MAX_PATH)
 						{
-							uint32 value = (file_data.dwFileAttributes) & FILE_ATTRIBUTE_DIRECTORY;
+							char root_path_s [MAX_PATH + 1];
+							wchar_t root_path [MAX_PATH + 1];
 
-							if (value != FILE_ATTRIBUTE_DIRECTORY)
+							mbstowcs (root_path, pattern_s, MAX_PATH);
+							PathCchRemoveFileSpec (root_path, MAX_PATH);
+							wcstombs (root_path_s, root_path, MAX_PATH);
+
+
+		#if WINDOWS_FS_DEBUG >= STM_LEVEL_FINEST
+							PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Searching pattern \"%s\", root_path \"%s\" full_path_flag %d", pattern_s, root_path_s, full_path_flag);
+		#endif
+
+
+							if ((handle = FindFirstFile (pattern_s, &file_data)) != INVALID_HANDLE_VALUE)
 								{
-									StringListNode *node_p = NULL;
-									char *filename_s = MakeFilename (root_path_s, file_data.cFileName);
+									uint32 value = (file_data.dwFileAttributes) & FILE_ATTRIBUTE_DIRECTORY;
 
-									if (filename_s)
+									if (value != FILE_ATTRIBUTE_DIRECTORY)
 										{
-											node_p = AllocateStringListNode (filename_s, MF_SHALLOW_COPY);
-										}
-									else
-										{
-											PrintErrors (STM_LEVEL_FINEST, __FILE__, __LINE__, "MakeFilename () failed for \"%s\", \"%S\"", root_path_s, file_data.cFileName);
-										}
+											StringListNode *node_p = NULL;
+											char *filename_s = MakeFilename (root_path_s, file_data.cFileName);
 
-#if WINDOWS_FS_DEBUG >= STM_LEVEL_FINEST
-									PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Found \"%s\" \"%s\"", root_path_s, file_data.cFileName, filename_s);
-#endif
-
-
-									if (node_p)
-										{
-											LinkedListAddTail (list_p, (ListItem *) node_p);
-										}
-
-									while (FindNextFile (handle, &file_data))
-										{
-											value = (file_data.dwFileAttributes) & FILE_ATTRIBUTE_DIRECTORY;
-											if (value != FILE_ATTRIBUTE_DIRECTORY)
+											if (filename_s)
 												{
-													char *filename_s = MakeFilename (root_path_s, file_data.cFileName);
+													node_p = AllocateStringListNode (filename_s, MF_SHALLOW_COPY);
+												}
+											else
+												{
+													PrintErrors (STM_LEVEL_FINEST, __FILE__, __LINE__, "MakeFilename () failed for \"%s\", \"%S\"", root_path_s, file_data.cFileName);
+												}
 
-													if (filename_s)
-													{
-														node_p = AllocateStringListNode (filename_s, MF_SHALLOW_COPY);
-													}
-													else
-													{
-														PrintErrors (STM_LEVEL_FINEST, __FILE__, __LINE__, "MakeFilename () failed for \"%s\", \"%S\"", root_path_s, file_data.cFileName);
-													}
+		#if WINDOWS_FS_DEBUG >= STM_LEVEL_FINEST
+											PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Found \"%s\" \"%s\"", root_path_s, file_data.cFileName, filename_s);
+		#endif
 
-#if WINDOWS_FS_DEBUG >= STM_LEVEL_FINEST
-													PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Found \"%s\" \"%s\"", root_path_s, file_data.cFileName, filename_s);
-#endif
 
-													if (node_p)
+											if (node_p)
+												{
+													LinkedListAddTail (list_p, (ListItem *) node_p);
+												}
+
+											while (FindNextFile (handle, &file_data))
+												{
+													value = (file_data.dwFileAttributes) & FILE_ATTRIBUTE_DIRECTORY;
+													if (value != FILE_ATTRIBUTE_DIRECTORY)
 														{
-															LinkedListAddTail (list_p, (ListItem *) node_p);
-														}
+															char *filename_s = MakeFilename (root_path_s, file_data.cFileName);
 
+															if (filename_s)
+															{
+																node_p = AllocateStringListNode (filename_s, MF_SHALLOW_COPY);
+															}
+															else
+															{
+																PrintErrors (STM_LEVEL_FINEST, __FILE__, __LINE__, "MakeFilename () failed for \"%s\", \"%S\"", root_path_s, file_data.cFileName);
+															}
+
+		#if WINDOWS_FS_DEBUG >= STM_LEVEL_FINEST
+															PrintLog (STM_LEVEL_FINEST, __FILE__, __LINE__, "Found \"%s\" \"%s\"", root_path_s, file_data.cFileName, filename_s);
+		#endif
+
+															if (node_p)
+																{
+																	LinkedListAddTail (list_p, (ListItem *) node_p);
+																}
+
+														}
 												}
 										}
-								}
 
-							if (! (FindClose (handle)))
-								{
-									// couldn't close search handle
+									if (! (FindClose (handle)))
+										{
+											// couldn't close search handle
+										}
 								}
 						}
-				}
+
+					++ pattern_ss;
+				}		/* while (*patterns_ss) */
+
+
 
 			if (list_p -> ll_size > 0)
 				{

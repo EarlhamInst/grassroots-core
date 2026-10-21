@@ -67,8 +67,8 @@ SRCS := \
 	string_int_pair.c \
 	string_linked_list.c \
 	string_utils.c \
-	time_util.c 
-#	unix_filesystem.c \
+	time_util.c \
+	unix_utils.c \
 #	unix_shared_memory.c \
 #	alloc_failure.cpp \
 

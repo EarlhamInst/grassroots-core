@@ -31,6 +31,7 @@
 #include "memory_allocations.h"
 #include "string_utils.h"
 #include "string_linked_list.h"
+#include "unix_utils.h"
 
 
 static bool CreateSingleLevelDirectory (const char *path_s);
@@ -111,75 +112,9 @@ char *GetPathOnly (const char * const full_path_to_file)
 
 
 
-LinkedList *GetMatchingFiles (const char * const pattern, const bool full_path_flag)
+LinkedList *GetMatchingFiles (const char ** const patterns_ss, const bool full_path_flag, const bool recurse_flag, bool (*match_fn) (const void *entry_p))
 {
-	LinkedList *list_p = AllocateLinkedList (FreeStringListNode);
-
-	if (list_p)
-		{
-			char *filename_p = GetFilenameOnly (pattern);
-
-			if (filename_p)
-				{
-					char *path_p = GetPathOnly (pattern);
-
-					if (path_p)
-						{
-							DIR *dir_p = opendir (path_p);
-
-							if (dir_p)
-								{
-									struct dirent entry;
-									struct dirent *entry_p = &entry;
-
-									while ((entry_p = readdir (dir_p)) != NULL)
-										{
-											if ((fnmatch (filename_p, entry_p -> d_name, 0)) == 0)
-												{
-													StringListNode *node_p = NULL;
-
-													if (full_path_flag)
-														{
-															char *full_filename_s = MakeFilename (path_p, entry_p -> d_name);
-
-															if (full_filename_s)
-																{
-																	node_p = AllocateStringListNode (full_filename_s, MF_SHALLOW_COPY);
-																}
-														}
-													else
-														{
-															node_p = AllocateStringListNode (entry_p -> d_name, MF_DEEP_COPY);
-														}
-
-													if (node_p)
-														{
-															LinkedListAddTail (list_p, (ListItem *) node_p);
-														}
-												}
-										}
-
-									closedir (dir_p);
-								}
-
-							FreeMemory (path_p);
-						}
-
-					FreeMemory (filename_p);
-				}
-
-
-			if (list_p -> ll_size > 0)
-				{
-					return list_p;
-				}
-			else
-				{
-					FreeLinkedList (list_p);
-				}
-		}
-
-	return NULL;
+	return GetUnixMatchingFiles (patterns_ss, full_path_flag, recurse_flag, match_fn);
 }
 
 
