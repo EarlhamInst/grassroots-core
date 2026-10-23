@@ -2753,6 +2753,13 @@ char *GetBSONOidAsString (const bson_oid_t *id_p)
 
 
 
+void PopulateBSONOidIntoString (const bson_oid_t *id_p, char *id_s)
+{
+	bson_oid_to_string (id_p, id_s);
+}
+
+
+
 void FreeBSONOidString (char *id_s)
 {
 	FreeMemory (id_s);

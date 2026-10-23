@@ -660,6 +660,9 @@ GRASSROOTS_MONGODB_API char *GetBSONOidAsString (const bson_oid_t *id_p);
 GRASSROOTS_MONGODB_API void FreeBSONOidString (char *id_s);
 
 
+GRASSROOTS_MONGODB_API void PopulateBSONOidIntoString (const bson_oid_t *id_p, char *id_s);
+
+
 GRASSROOTS_MONGODB_API bson_oid_t *GetBSONOidFromString (const char *id_s);
 
 
