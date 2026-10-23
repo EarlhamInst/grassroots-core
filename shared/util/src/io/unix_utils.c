@@ -38,7 +38,7 @@ LinkedList *GetUnixMatchingFiles (const char ** const patterns_ss, const bool fu
 										{
 											struct dirent entry;
 											struct dirent *entry_p = &entry;
-											const int flags = FNM_IGNORECASE;
+											const int flags = FNM_CASEFOLD;
 
 											while ((entry_p = readdir (dir_p)) != NULL)
 												{

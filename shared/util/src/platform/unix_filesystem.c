@@ -243,21 +243,31 @@ bool CopyToNewFile (const char * const src_filename_s, const char * const dest_f
 
 			if (out_f)
 				{
-					char buffer [8192];		/* 32 * 256 */
+
+					char buffer [32768];		/* 64 * 512 */
 					success_flag = true;
+					bool loop_flag = true;
 
-					while (success_flag)
+					while (success_flag && loop_flag)
 						{
-							size_t num_objs = fread (buffer, 32, 256, in_f);
+							size_t num_objs_read = fread (buffer, 1, 32768, in_f);
 
-							if (num_objs > 0)
+							if (num_objs_read > 0)
 								{
-									if (fwrite (buffer, 32, 256, out_f) != num_objs)
+									size_t num_objs_written = fwrite (buffer, 1, num_objs_read, out_f);
+
+									if (num_objs_read != num_objs_written)
 										{
 											success_flag = false;
 											saved_errno = errno;
+											PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CopyToNewFile (): Read " SIZET_FMT " blocks but wrote " SIZET_FMT, num_objs_read, num_objs_written);
 										}
 								}
+							else
+								{
+									loop_flag = false;
+								}
+
 						}		/* while (success_flag) */
 
 					if (success_flag)
@@ -268,15 +278,40 @@ bool CopyToNewFile (const char * const src_filename_s, const char * const dest_f
 					fclose (out_f);
 
 				}		/* if (out_f) */
+			else
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CopyToNewFile (): Failed to open destination file \"%s\"", dest_filename_s);
+				}
 
 			fclose (in_f);
 
 		}		/* if (in_f) */
+	else
+		{
+			PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CopyToNewFile (): Failed to open source file \"%s\"", src_filename_s);
+		}
 
 	/* In case closing one of the files overwrote it, restore errno */
 	if (saved_errno != 0)
 		{
 			errno = saved_errno;
+		}
+
+
+	if (!success_flag)
+		{
+			FileInformation info = { };
+
+			if (CalculateFileInformation (src_filename_s, &info))
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CopyToNewFile (): Source file \"%s\" size " SIZET_FMT, src_filename_s, info.fi_size);
+				}
+
+			if (CalculateFileInformation (dest_filename_s, &info))
+				{
+					PrintErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, "CopyToNewFile (): Destination file \"%s\" size " SIZET_FMT, dest_filename_s, info.fi_size);
+				}
+
 		}
 
 	return success_flag;
