@@ -1133,7 +1133,7 @@ User *GetUserById (const GrassrootsServer *grassroots_p, const bson_oid_t *id_p)
 }
 
 
-User *GetUserByIdString (const GrassrootsServer *grassroots_p, const char *id_s)
+User *GetExistingUserByIdString (const GrassrootsServer *grassroots_p, const char *id_s)
 {
 	User *user_p = NULL;
 	bson_t *query_p = bson_new ();
@@ -1161,7 +1161,7 @@ User *GetUserByIdString (const GrassrootsServer *grassroots_p, const char *id_s)
 
 
 
-User *GetUserByEmailAddress (const GrassrootsServer *grassroots_p, const char *email_s)
+User *GetExistingUserByEmailAddress (const GrassrootsServer *grassroots_p, const char *email_s)
 {
 	User *user_p = NULL;
 	bson_t *query_p = bson_new ();
@@ -1512,6 +1512,64 @@ static int8 ProcessServiceFromJSON (GrassrootsServer *grassroots_p, const json_t
 	return res;
 }
 
+
+OperationStatus SaveUserOnServer (const GrassrootsServer *grassroots_p, User *user_p)
+{
+	OperationStatus status = OS_IDLE;
+	const json_t *user_db_config_p = GetGlobalConfigValue (grassroots_p, "users");
+
+	if (user_db_config_p)
+		{
+			const char *db_s = GetJSONString (user_db_config_p, "database");
+			const char *collection_s = GetJSONString (user_db_config_p, "users_collection");
+
+			if (db_s && collection_s)
+				{
+					MongoTool *mongo_p = AllocateMongoTool (NULL, grassroots_p -> gs_mongo_manager_p);
+
+					if (mongo_p)
+						{
+							if (SetMongoToolDatabaseAndCollection (mongo_p, db_s, collection_s))
+								{
+									bson_t *selector_p = NULL;
+									bool success_flag = PrepareSaveData (& (user_p -> us_id_p), &selector_p);
+
+									if (success_flag)
+										{
+											json_t *user_json_p = GetUserAsJSON (user_p, true);
+
+											if (user_json_p)
+												{
+													if (SaveMongoDataWithTimestamp (mongo_p, user_json_p, collection_s, selector_p, MONGO_TIMESTAMP_S))
+														{
+															status = OS_SUCCEEDED;
+														}
+													else
+														{
+															status = OS_FAILED;
+														}
+
+
+													json_decref (user_json_p);
+												}		/* if (user_json_p) */
+
+										}		/* if (success_flag) */
+
+								}		/* if (SetMongoToolDatabaseAndCollection (mongo_p, db_s, collection_s)) */
+
+							FreeMongoTool (mongo_p);
+						}		/* if (mongo_p) */
+
+				}		/* if (db_s && collection_s) */
+
+		}		/* if (user_db_config_p) */
+	else
+		{
+			PrintLog (STM_LEVEL_INFO, __FILE__, __LINE__, "SaveUser (), no users section in global config");
+		}
+
+	return status;
+}
 
 
 

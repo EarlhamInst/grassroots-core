@@ -29,7 +29,7 @@
 #define MONGO_DB_UTIL_H_
 
 #include "mongodb_library.h"
-#include "grassroots_server.h"
+//#include "grassroots_server.h"
 #include "typedefs.h"
 
 
@@ -39,7 +39,7 @@
 
 /**
  * When the Grassroots system starts up, iniitialise
- * and global MongoDB resources that it needs.
+ * any global MongoDB resources that it needs.
  *
  * @return <code>true</code> if the global MongoDB resources
  * were acquired successfully,

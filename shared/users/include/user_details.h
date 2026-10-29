@@ -31,6 +31,8 @@
 #include "linked_list.h"
 #include "schema_keys.h"
 #include "view_format.h"
+#include "operation.h"
+
 
 
 /**
@@ -95,6 +97,10 @@ USER_PREFIX const char *US_EMAIL_S USER_CONCAT_VAL (CONTEXT_PREFIX_SCHEMA_ORG_S,
 USER_PREFIX const char *US_AFFILATION_S USER_CONCAT_VAL (CONTEXT_PREFIX_SCHEMA_ORG_S, "affiliation");
 
 USER_PREFIX const char *US_ORCID_S USER_VAL ("orcid");
+
+
+/* forward declaration */
+struct MongoTool;
 
 
 
@@ -219,6 +225,9 @@ GRASSROOTS_USERS_API void FreeUserNode (ListItem *node_p);
 
 GRASSROOTS_USERS_API int CompareUserEmails (const User * const user_0_p, const User * const user_1_p);
 
+
+
+GRASSROOTS_USERS_API OperationStatus SaveUser (User *user_p, struct MongoTool *mongo_p, const char * const collection_s);
 
 
 #ifdef __cplusplus

@@ -23,6 +23,7 @@
 #include "json_util.h"
 #include "streams.h"
 #include "mongodb_tool.h"
+#include "mongodb_util.h"
 
 
 static bool AddDetailsToUserJSON (const User * const user_p, json_t *user_json_p);
@@ -400,6 +401,39 @@ int CompareUserEmails (const User * const user_0_p, const User * const user_1_p)
 		}
 
 	return res;
+}
+
+
+
+OperationStatus SaveUser (User *user_p, MongoTool *mongo_p, const char * const collection_s)
+{
+	OperationStatus status = OS_FAILED;
+	bson_t *selector_p = NULL;
+	bool success_flag = PrepareSaveData (& (user_p -> us_id_p), &selector_p);
+
+	if (success_flag)
+		{
+			json_t *user_json_p = GetUserAsJSON (user_p, true);
+
+			if (user_json_p)
+				{
+					if (SaveMongoDataWithTimestamp (mongo_p, user_json_p, collection_s, selector_p, MONGO_TIMESTAMP_S))
+						{
+							status = OS_SUCCEEDED;
+						}
+					else
+						{
+							status = OS_FAILED;
+						}
+
+
+					json_decref (user_json_p);
+				}
+
+
+		}		/* if (success_flag) */
+
+	return status;
 }
 
 

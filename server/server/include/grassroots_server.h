@@ -377,7 +377,7 @@ GRASSROOTS_SERVICE_MANAGER_API json_t *GetGlobalServiceConfig (GrassrootsServer 
  * @return The User or <code>NULL</code> upon error.
  * @memberof GrassrootsServer
  */
-GRASSROOTS_SERVICE_MANAGER_API User *GetUserByEmailAddress (const GrassrootsServer *grassroots_p, const char *email_s);
+GRASSROOTS_SERVICE_MANAGER_API User *GetExistingUserByEmailAddress (const GrassrootsServer *grassroots_p, const char *email_s);
 
 
 
@@ -390,7 +390,7 @@ GRASSROOTS_SERVICE_MANAGER_API User *GetUserByEmailAddress (const GrassrootsServ
  * @return The User or <code>NULL</code> upon error.
  * @memberof GrassrootsServer
  */
-GRASSROOTS_SERVICE_MANAGER_API User *GetUserByIdString (const GrassrootsServer *grassroots_p, const char *id_s);
+GRASSROOTS_SERVICE_MANAGER_API User *GetExistingUserByIdString (const GrassrootsServer *grassroots_p, const char *id_s);
 
 
 
@@ -406,13 +406,25 @@ GRASSROOTS_SERVICE_MANAGER_API User *GetUserById (const GrassrootsServer *grassr
 
 
 /**
- * Get a list of all Users
+ * Get a list of all Users.
  *
  * @param grassroots_p The GrassrootsServer to search.
  * @return The list of Users or <code>NULL</code> upon error.
  * @memberof GrassrootsServer
  */
 GRASSROOTS_SERVICE_MANAGER_API LinkedList *GetAllUsers (const GrassrootsServer *grassroots_p);
+
+
+/**
+ * Save the logged-in User to the system.
+ *
+ * @param grassroots_p The GrassrootsServer to save the User to
+ * @param user_p The User to save..
+ * @return OS_SUCCEEDED if the User was saved successfully, OS_IDLE if the user database configuration has not been
+ * set, OS_FAILED upon error.
+ * @memberof GrassrootsServer
+ */
+GRASSROOTS_SERVICE_MANAGER_API OperationStatus SaveLoggedInUser (const GrassrootsServer *grassroots_p, User *user_p);
 
 
 /**
