@@ -424,7 +424,7 @@ GRASSROOTS_SERVICE_MANAGER_API LinkedList *GetAllUsers (const GrassrootsServer *
  * set, OS_FAILED upon error.
  * @memberof GrassrootsServer
  */
-GRASSROOTS_SERVICE_MANAGER_API OperationStatus SaveLoggedInUser (const GrassrootsServer *grassroots_p, User *user_p);
+GRASSROOTS_SERVICE_MANAGER_API OperationStatus SaveUserOnServer (const GrassrootsServer *grassroots_p, User *user_p);
 
 
 /**

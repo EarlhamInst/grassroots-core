@@ -254,7 +254,6 @@ User *GetUserFromNamedJSON (const json_t *json_p, const char *user_key_s)
 
 User *GetUserFromJSON (const json_t *user_json_p)
 {
-	User *user_p = NULL;
 	bson_oid_t *id_p = GetNewUnitialisedBSONOid ();
 
 	if (id_p)
@@ -266,33 +265,19 @@ User *GetUserFromJSON (const json_t *user_json_p)
 					if (email_s)
 						{
 							const char *forename_s = GetJSONString (user_json_p, US_FORENAME_S);
+							const char *surname_s = GetJSONString (user_json_p, US_SURNAME_S);
+							const char *org_s = GetJSONString (user_json_p, US_AFFILATION_S);
+							const char *orcid_s = GetJSONString (user_json_p, US_ORCID_S);
 
-							if (forename_s)
+							User *user_p = AllocateUser (id_p, email_s, forename_s, surname_s, org_s, orcid_s);
+
+							if (user_p)
 								{
-									const char *surname_s = GetJSONString (user_json_p, US_SURNAME_S);
-
-									if (surname_s)
-										{
-											const char *org_s = GetJSONString (user_json_p, US_AFFILATION_S);
-											const char *orcid_s = GetJSONString (user_json_p, US_ORCID_S);
-
-											user_p = AllocateUser (id_p, email_s, forename_s, surname_s, org_s, orcid_s);
-
-											if (!user_p)
-												{
-													PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, user_json_p, "AllocateUser () failed");
-												}
-
-										}
-									else
-										{
-											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, user_json_p, "No surname specified in user json");
-										}
-
+									return user_p;
 								}
 							else
 								{
-									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, user_json_p, "No forename specified in user json");
+									PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, user_json_p, "AllocateUser () failed for \"%s\"", email_s);
 								}
 
 						}
@@ -301,11 +286,20 @@ User *GetUserFromJSON (const json_t *user_json_p)
 							PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, user_json_p, "No email specified in user json");
 						}
 
+				}		/* if (GetMongoIdFromJSON (user_json_p, id_p)) */
+			else
+				{
+					PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, user_json_p, "GetUserFromJSON (): GetMongoIdFromJSON () failed");
 				}
+
+		}		/* if (id_p) */
+	else
+		{
+			PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, user_json_p, "GetUserFromJSON (): GetNewUnitialisedBSONOid () failed");
 		}
 
 
-	return user_p;
+	return NULL;
 }
 
 
