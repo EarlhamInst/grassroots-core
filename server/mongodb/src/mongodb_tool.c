@@ -2734,6 +2734,22 @@ bool AddCompoundIdToJSONArray (json_t *array_p, const bson_oid_t *id_p)
 
 
 
+char *GetBSONOidBuffer (void)
+{
+	const size_t buffer_size = MONGO_OID_STRING_BUFFER_SIZE * sizeof (char);
+
+	char *id_s = (char *) AllocMemory (buffer_size);
+
+	if (id_s)
+		{
+			memset (id_s, buffer_size, 0);
+
+			return id_s;
+		}
+
+	return NULL;
+}
+
 char *GetBSONOidAsString (const bson_oid_t *id_p)
 {
 	char *id_s = NULL;

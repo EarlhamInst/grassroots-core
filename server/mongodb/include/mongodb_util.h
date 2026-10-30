@@ -32,6 +32,8 @@
 //#include "grassroots_server.h"
 #include "typedefs.h"
 
+#include "mongoc/mongoc.h"
+
 
 #ifdef __cplusplus
 	extern "C" {

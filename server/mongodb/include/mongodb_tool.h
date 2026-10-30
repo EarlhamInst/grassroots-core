@@ -657,6 +657,9 @@ GRASSROOTS_MONGODB_API bson_t *ConvertJSONToBSON (const json_t *json_p);
 GRASSROOTS_MONGODB_API char *GetBSONOidAsString (const bson_oid_t *id_p);
 
 
+GRASSROOTS_MONGODB_API char *GetBSONOidBuffer (void);
+
+
 GRASSROOTS_MONGODB_API void FreeBSONOidString (char *id_s);
 
 

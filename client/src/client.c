@@ -34,7 +34,7 @@
 
 
 #ifdef _DEBUG
-	#define CLIENT_DEBUG (STM_LEVEL_FINEST)
+	#define CLIENT_DEBUG (STM_LEVEL_INFO)
 #else
 	#define CLIENT_DEBUG (STM_LEVEL_NONE)
 #endif

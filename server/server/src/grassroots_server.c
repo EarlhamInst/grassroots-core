@@ -39,6 +39,7 @@
 
 #include "service_util.h"
 #include "mongodb_tool.h"
+#include "mongodb_util.h"
 
 
 #define GRASSROOTS_SERVE_DEBUG (STM_LEVEL_INFO)
