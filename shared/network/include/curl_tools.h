@@ -104,6 +104,10 @@ typedef struct CurlTool
 
 	bool ct_verbose_flag;
 
+	long ct_response_code;
+
+
+
 } CurlTool;
 
 

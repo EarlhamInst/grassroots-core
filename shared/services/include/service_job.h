@@ -569,11 +569,12 @@ GRASSROOTS_SERVICE_API json_t *GetServiceJobStatusAsJSON (ServiceJob *job_p, boo
  *
  * @param jobs_p The ServiceJobSet to process.
  * @param res_p The JSON array where are any results will get appended.
+ * @param user_p The currently logged in or <code>NULL</code> if it's open access with no need to authenticate.
  * @return <code>true</code> if all ServiceJobs within the ServiceJobSet
  * were processed successfully, <code>false</code> otherwise.
  * @memberof ServiceJobSet
  */
-GRASSROOTS_SERVICE_API bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p);
+GRASSROOTS_SERVICE_API bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, User *user_p);
 
 
 /**

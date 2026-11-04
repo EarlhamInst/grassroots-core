@@ -173,6 +173,7 @@ static CurlTool *AllocateCurlTool (CurlMode mode)
 					curl_tool_p -> ct_username_s = NULL;
 					curl_tool_p -> ct_password_s = NULL;
 					curl_tool_p -> ct_verbose_flag = false;
+					curl_tool_p -> ct_response_code = -1;
 
 					return curl_tool_p;
 				}		/* if (curl_tool_p) */
@@ -457,7 +458,7 @@ CURLcode RunCurlTool (CurlTool *tool_p)
 
 	if (res == CURLE_OK)
 		{
-			CURLcode time_res;
+			CURLcode temp_res;
 			double total;
 
 		  curl_easy_setopt (tool_p -> ct_curl_p, CURLOPT_NOPROGRESS, 1L);
@@ -467,11 +468,26 @@ CURLcode RunCurlTool (CurlTool *tool_p)
 				  curl_easy_setopt (tool_p -> ct_curl_p, CURLOPT_VERBOSE, 1L);
 		  	}
 
+  		tool_p -> ct_response_code = -1;
+
 			res = curl_easy_perform (tool_p -> ct_curl_p);
 
-	    time_res = curl_easy_getinfo (tool_p -> ct_curl_p, CURLINFO_TOTAL_TIME, &total);
+	    temp_res = curl_easy_getinfo (tool_p -> ct_curl_p, CURLINFO_RESPONSE_CODE, & (tool_p -> ct_response_code));
 
-	    if (time_res == CURLE_OK)
+	    if (temp_res != CURLE_OK)
+	    	{
+	    		char *url_s = NULL;
+
+	    		tool_p -> ct_response_code = -1;
+
+	    		curl_easy_getinfo (tool_p -> ct_curl_p, CURLINFO_EFFECTIVE_URL, &url_s);
+
+	    		PrintErrors (STM_LEVEL_WARNING, __FILE__, __LINE__, "Failed to get response code for \"%s\"", url_s ? url_s : "");
+	    	}
+
+	    temp_res = curl_easy_getinfo (tool_p -> ct_curl_p, CURLINFO_TOTAL_TIME, &total);
+
+	    if (temp_res == CURLE_OK)
 	    	{
 					//PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Transfer took %lf seconds");
 	    	}

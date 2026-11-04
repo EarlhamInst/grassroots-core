@@ -1706,7 +1706,7 @@ static int8 RunServiceFromJSON (GrassrootsServer *grassroots_p, Service *service
 
 									if (jobs_p)
 										{
-											if (ProcessServiceJobSet (jobs_p, res_p))
+											if (ProcessServiceJobSet (jobs_p, res_p, user_p))
 												{
 													++ res;
 												}
@@ -1811,7 +1811,7 @@ static int8 GetServiceIndexingInformation (GrassrootsServer *grassroots_p, Servi
 										{
 											AddResultToServiceJob (job_p, indexing_p);
 
-											if (ProcessServiceJobSet (jobs_p, res_p))
+											if (ProcessServiceJobSet (jobs_p, res_p, user_p))
 												{
 													++ res;
 												}
@@ -2181,7 +2181,7 @@ static json_t *RunKeywordServices (GrassrootsServer *grassroots_p, const json_t 
 
 																					if (jobs_set_p)
 																						{
-																							ProcessServiceJobSet (jobs_set_p, results_p);
+																							ProcessServiceJobSet (jobs_set_p, results_p, user_p);
 																						}
 																					else
 																						{
