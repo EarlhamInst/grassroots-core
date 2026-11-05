@@ -106,8 +106,6 @@ typedef struct CurlTool
 
 	long ct_response_code;
 
-
-
 } CurlTool;
 
 
