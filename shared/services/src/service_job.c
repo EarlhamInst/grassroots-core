@@ -1302,7 +1302,7 @@ bool SetServiceJobResults (ServiceJob *job_p, json_t *new_results_p)
 }
 
 
-bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
+bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p, User *user_p)
 {
 	bool success_flag = true;
 	uint32 i = 0;
@@ -1337,6 +1337,26 @@ bool ProcessServiceJobSet (ServiceJobSet *jobs_p, json_t *res_p)
 #if SERVICE_JOB_DEBUG >= STM_LEVEL_FINER
 					PrintJSONRefCounts (STM_LEVEL_FINE, __FILE__, __LINE__, job_json_p, "Job JSON");
 #endif
+
+
+					/*
+					 * Add the user to json response
+					 */
+					if (user_p)
+						{
+							json_t *user_json_p = GetUserAsJSON (user_p, VF_CLIENT_FULL);
+
+							if (user_json_p)
+								{
+									if (json_object_set_new (job_json_p, USER_S, user_json_p) != 0)
+										{
+											PrintJSONToErrors (STM_LEVEL_SEVERE, __FILE__, __LINE__, job_json_p, "Failed to add user \"%s\" to ServiceJob JSON", user_p -> us_email_s ? user_p -> us_email_s : "");
+
+											json_decref (user_json_p);
+										}
+								}
+						}
+
 
 					if (json_array_append_new (res_p, job_json_p) == 0)
 						{

@@ -468,9 +468,13 @@ CURLcode RunCurlTool (CurlTool *tool_p)
 				  curl_easy_setopt (tool_p -> ct_curl_p, CURLOPT_VERBOSE, 1L);
 		  	}
 
+  		tool_p -> ct_response_code = -1;
+
 			res = curl_easy_perform (tool_p -> ct_curl_p);
 
+
 	    c = curl_easy_getinfo (tool_p -> ct_curl_p, CURLINFO_TOTAL_TIME, &total);
+
 	    if (c == CURLE_OK)
 	    	{
 					//PrintLog (STM_LEVEL_SEVERE, __FILE__, __LINE__, "Transfer took %lf seconds");
