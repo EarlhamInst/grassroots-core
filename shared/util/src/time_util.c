@@ -96,6 +96,15 @@ bool SetTimeFromDDMMYYYYString (struct tm * const time_p, const char *time_s)
 
 
 
+bool SetTimeFromDDMMYYString (struct tm * const time_p, const char *time_s)
+{
+	/* DD-MM-YYYY */
+	return ParseStringToTime (time_p, time_s,
+																	 4, 5,
+																	 2, 3,
+																	 0, 1);
+}
+
 
 
 char *GetTimeAsString (const struct tm * const time_p, const bool include_time_flag, const char *time_delimiter_p)
@@ -624,6 +633,12 @@ static bool ParseStringToTime (struct tm * const time_p, const char *time_s,
 			if (ConvertNumber (time_s, year_start, year_end, &year))
 				{
 					int month;
+
+					/* is the year in 2- or 4-digit format */
+					if ((year >= 0) && (year < 100))
+						{
+							year = 2000 + year;
+						}
 
 					if (ConvertNumber (time_s, month_start, month_end, &month))
 						{
