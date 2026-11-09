@@ -622,11 +622,17 @@ static bool ParseStringToTime (struct tm * const time_p, const char *time_s,
 	bool success_flag = false;
 	const size_t l = strlen (time_s);
 
+
+	/* Make sure that we don't get buffer overruns*/
+	uint32 final_index = year_end > month_end ? year_end : month_end;
+	final_index = day_end > final_index ? day_end : final_index;
+
+
 	/*
 	 * String is of the format DD-MM-YYYY or DD-MM-YYYYThh:mm:ss
 	 */
 
-	if (l >= S_DATE_BUFFER_SIZE - 1)
+	if (final_index < S_DATE_BUFFER_SIZE)
 		{
 			int year;
 
