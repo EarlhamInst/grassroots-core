@@ -229,53 +229,8 @@ bool EnsureDirectoryExists (const char * const path_s)
  */
 bool CopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) (void))
 {
-	FILE *in_f = fopen (src_filename_s, "rb");
-	bool success_flag = false;
-	int saved_errno = 0;
+	return UnixCopyToNewFile (src_filename_s, dest_filename_s, callback_fn);
 
-	if (in_f)
-		{
-			FILE *out_f = fopen (dest_filename_s, "wb");
-
-			if (out_f)
-				{
-					char buffer [8192];		/* 32 * 256 */
-					success_flag = true;
-
-					while (success_flag)
-						{
-							size_t num_objs = fread (buffer, 32, 256, in_f);
-
-							if (num_objs > 0)
-								{
-									if (fwrite (buffer, 32, 256, out_f) != num_objs)
-										{
-											success_flag = false;
-											saved_errno = errno;
-										}
-								}
-						}		/* while (success_flag) */
-
-					if (success_flag)
-						{
-							success_flag = (feof (in_f) != 0) ? true : false;
-						}
-
-					fclose (out_f);
-
-				}		/* if (out_f) */
-
-			fclose (in_f);
-
-		}		/* if (in_f) */
-
-	/* In case closing one of the files overwrote it, restore errno */
-	if (saved_errno != 0)
-		{
-			errno = saved_errno;
-		}
-
-	return success_flag;
 }
 
 

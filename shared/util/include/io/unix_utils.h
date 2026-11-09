@@ -24,6 +24,9 @@ extern "C"
 GRASSROOTS_UTIL_LOCAL LinkedList *GetUnixMatchingFiles (const char ** const patterns_ss, const bool full_path_flag, const bool recurse_flag, bool (*match_fn) (const void *data_p));
 
 
+GRASSROOTS_UTIL_LOCAL bool UnixCopyToNewFile (const char * const src_filename_s, const char * const dest_filename_s, void (*callback_fn) (void));
+
+
 #ifdef __cplusplus
 }
 #endif
